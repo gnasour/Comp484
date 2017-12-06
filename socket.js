@@ -9,6 +9,7 @@ class Player{
         
     }
 }
+var id_numbers = [1,2];
 var cardStack = [
     "AC", "AH", "AS", "AD",
     "2C", "2H", "2S", "2D",
@@ -82,10 +83,14 @@ function new_game() {
 }
 io.on('connection', function (socket) {
     console.log('Player connected');
+    socket.emit('fromServer', {id:id_numbers.shift()});
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
+            new_game();
             cardStack = shuffle(cardStack);
         }
-
+        else if (data.action === "hit"){
+            socket.emit('fromServer', {card: hit_me()});
+        }
     });
 });
