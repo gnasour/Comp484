@@ -10,21 +10,7 @@ class Player{
     }
 }
 var id_numbers = [1,2];
-var cardStack = [
-    "AC", "AH", "AS", "AD",
-    "2C", "2H", "2S", "2D",
-    "3C", "3H", "3S", "3D",
-    "4C", "4H", "4S", "4D",
-    "5C", "5H", "5S", "5D",
-    "6C", "6H", "6S", "6D",
-    "7C", "7H", "7S", "7D",
-    "8C", "8H", "8S", "8D",
-    "9C", "9H", "9S", "9D",
-    "10C", "10H", "10S", "10D",
-    "JC", "JH", "JS", "JD",
-    "QC", "QH", "QS", "QD",
-    "KC", "KH", "KS", "KD"
-];
+var cardStack = [];
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -57,15 +43,17 @@ function getValueOfCard(playing_card) {
         return 10;
     else if (playing_card[0] === "J" || playing_card[0] === "Q" || playing_card[0] === "K")
         return 10;
+    else if (playing_card[0] === "A")
+        return 11;
     else
         return parseInt(playing_card[0]);
 }
 function hit_me() {
-    return cardStack.pop();
+    return cardStack.shift();
 }
 function new_game() {
-    cardStack = [
-        "AC", "AH", "AS", "AD",
+    var newCardStack = [
+        "AC", "KH", "KS", "AD",
         "2C", "2H", "2S", "2D",
         "3C", "3H", "3S", "3D",
         "4C", "4H", "4S", "4D",
@@ -79,6 +67,7 @@ function new_game() {
         "QC", "QH", "QS", "QD",
         "KC", "KH", "KS", "KD"
     ];
+    return newCardStack;
 
 }
 io.on('connection', function (socket) {
@@ -86,11 +75,13 @@ io.on('connection', function (socket) {
     socket.emit('fromServer', {id:id_numbers.shift()});
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
-            new_game();
-            cardStack = shuffle(cardStack);
+            cardStack = new_game();
+            //cardStack = shuffle(cardStack);
         }
         else if (data.action === "hit"){
-            socket.emit('fromServer', {card: hit_me()});
+            let card_type = hit_me();
+            let card_value = getValueOfCard(card_type);
+            socket.emit('fromServer', {card: card_type, value: card_value});
         }
     });
 });
