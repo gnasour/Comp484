@@ -2,16 +2,15 @@ let app = require('http').createServer(); // create HTTP server
 let io = require('socket.io')(app, { path: '/' }); // bind Socket to HTTP server
 app.listen(3000); // listen on port 3000
 console.log('Listening for connections on port 3000');
-class Player{
-    constructor(hand, sum_of_hand){
+class Player {
+    constructor(hand, sum_of_hand) {
         hand = null;
         sum_of_hand = 0;
-        
+
     }
 }
-var id_numbers = [1,2];
+var id_numbers = [1, 2];
 var cardStack = [];
-var dealerTotal = 0;
 var deletedTen = false;
 var firstAce = false;
 function shuffle(array) {
@@ -32,17 +31,7 @@ function shuffle(array) {
 
     return array;
 }
-function dealerAI(){
-    while(dealerTotal < 16){
-        if(dealerTotal > 21){
-            if(firstAce === true && deletedTen === false){
-                dealerTotal -= 10;
-                firstAce = false;
-                deletedTen = true;
-            }
-
-        }
-    }
+function dealerAI() {
 }
 function checkIfBust(players_hands) {
     let hand_total = 0;
@@ -61,11 +50,11 @@ function getValueOfCard(playing_card) {
         return parseInt(playing_card[0]);
 }
 function hit_me() {
-    return cardStack.pop();
+    return cardStack.shift();
 }
 function new_game() {
     var newCardStack = [
-        "AC", "AH", "AS", "AD",
+        "AC", "JH", "8S", "AD",
         "2C", "2H", "2S", "2D",
         "3C", "3H", "3S", "3D",
         "4C", "4H", "4S", "4D",
@@ -84,19 +73,34 @@ function new_game() {
 }
 io.on('connection', function (socket) {
     console.log('Player connected');
-    socket.emit('fromServer', {id:id_numbers.shift()});
+    socket.emit('fromServer', { id: id_numbers.shift() });
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
             cardStack = new_game();
             //cardStack = shuffle(cardStack);
         }
-        else if (data.action === "hit"){
+        else if (data.action === "hit") {
             let card_type = hit_me();
             let card_value = getValueOfCard(card_type);
-            socket.emit('fromServer', {card: card_type, value: card_value});
+            socket.emit('fromServer', { card: card_type, value: card_value });
         }
-        else if (data.action === "stand"){
-            dealerAI();
+        else if (data.action === "stand") {
+            while (dealerTotal < 17) {
+                let dealerCard = hit_me();
+                let dealerCardValue = getValueOfCard(dealerCard)
+                if(dealerTotal >= 11 && dealerCardValue === 11)
+                    dealerTotal += 1;
+                else if(dealerTotal < 11 ) 
+                socket.emit('fromServer', { dealer_card: dealerCard, dealer_total: dealerTotal });
+                if (dealerTotal > 21) {
+                    if (firstAce === true && deletedTen === false) {
+                        dealerTotal -= 10;
+                        firstAce = false;
+                        deletedTen = true;
+                    }
+
+                }
+            }
         }
     });
 });

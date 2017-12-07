@@ -21,13 +21,13 @@
         var socket = io('http://localhost:3000', { path: '/' }); // connect to server
 
         function hitMe() {
-            socket.emit('fromClient', { action: "hit", player_total: total });
+            socket.emit('fromClient', { action: "hit"});
         }
-        function stand(){
+        function stands(){
             stand = true;
             document.getElementById("hit").disabled = true;
-            alert("User stands");
-            socket.emit('fromClient', {action: "stand"})
+            
+            socket.emit('fromClient', {action: "stand", player_total: total })
 
         }
         function newGame() {
@@ -54,6 +54,9 @@
                     alert("Bust! Start A New Game");
                     document.getElementById("hit").disabled = true;
                 }
+            }
+            else if(total === 21){
+                alert("blackjack!");
             }
         }
         socket.on('fromServer', function (data) {
@@ -136,6 +139,21 @@
                 checkGame();
                 document.getElementById('current_total').innerHTML = total;
             }
+            else if (data.dealer_card && document.getElementById('dealer_hand1').innerHTML.length === 0) {
+                document.getElementById('dealer_hand1').innerHTML = dealer_card;
+            }
+            else if (data.dealer_card && document.getElementById('dealer_hand2').innerHTML.length === 0) {
+                document.getElementById('dealer_hand2').innerHTML = dealer_card;
+            }
+            else if (data.dealer_card && document.getElementById('dealer_hand3').innerHTML.length === 0) {
+                document.getElementById('dealer_hand3').innerHTML = dealer_card;
+            }
+            else if (data.dealer_card && document.getElementById('dealer_hand4').innerHTML.length === 0) {
+                document.getElementById('dealer_hand4').innerHTML = dealer_card;
+            }
+            else if (data.dealer_card && document.getElementById('dealer_hand5').innerHTML.length === 0) {
+                document.getElementById('dealer_hand5').innerHTML = dealer_card;
+            }
         });
     </script>
 </head>
@@ -187,8 +205,8 @@
             </div>
             <div class="col-6" style="border-top-width: 10px;top: 500px;">
                 <button onclick="hitMe()" id="hit">Hit!</button>
-                <button onclick="stand()" id="stand">Stand</button>
-                <button onclick="newGame()">New Game!</button>
+                <button onclick="stands()" id="stand">Stand</button>
+                <button onclick="newGame()" >New Game!</button>
             </div>
             <div class="col">
 
