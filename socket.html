@@ -15,6 +15,7 @@
         var myID = null;
         var total = 0;
         var firstAce = false;
+        var deletedTen = false;
         var bust = false;
         var socket = io('http://localhost:3000', { path: '/' }); // connect to server
 
@@ -22,16 +23,24 @@
             socket.emit('fromClient', { action: "hit", player_total: total });
         }
         function newGame() {
+            total = 0;
+            firstAce = false;
+            deletedTen = false;
+            bust = false;
             socket.emit('fromClient', { action: "new_game" });
         }
-        function checkGame(){
-            if(total > 21){
-                if(firstAce === true){
-                    total - 10;
+        function checkGame() {
+            if (total > 21) {
+                if (firstAce === true && deletedTen === false) {
+                    total -= 10;
                     firstAce = false;
+                    deletedTen = true;
                 }
-                else
-                    alert("Busted :3");
+                else{
+                    alert("Bust! Start A New Game");
+                    document.getElementById("hit").disabled = true;
+                    return;
+                }
             }
         }
         socket.on('fromServer', function (data) {
@@ -40,56 +49,84 @@
                 myID = data.id;
                 console.log(myID);
             }
-            else if (data.card && document.getElementById('hand1').innerHTML.length === 0){
+            else if (data.card && document.getElementById('hand1').innerHTML.length === 0) {
                 document.getElementById('hand1').innerHTML = data.card;
-                if(total >= 11 && data.value === 11){
+                if (total >= 11 && data.value === 11) {
                     total += 1;
+                }
+                else if (total < 11 && data.value === 11) {
+                    total += 11;
                     firstAce = true;
                 }
                 else
                     total += data.value;
-                document.getElementById('current_total').innerHTML = total;
                 checkGame();
+                document.getElementById('current_total').innerHTML = total;
+
             }
-            else if (data.card && document.getElementById('hand2').innerHTML.length === 0){
+            else if (data.card && document.getElementById('hand2').innerHTML.length === 0) {
                 document.getElementById('hand2').innerHTML = data.card;
-                if(total >= 11 && data.value === 11){
+                if (total >= 11 && data.value === 11) {
                     total += 1;
+
+                }
+                else if (total < 11 && data.value === 11) {
+                    total += 11;
                     firstAce = true;
                 }
                 else
                     total += data.value;
-                document.getElementById('current_total').innerHTML = total;
                 checkGame();
+                document.getElementById('current_total').innerHTML = total;
+
             }
-            else if (data.card && document.getElementById('hand3').innerHTML.length === 0){
+            else if (data.card && document.getElementById('hand3').innerHTML.length === 0) {
                 document.getElementById('hand3').innerHTML = data.card;
-                if(total >= 11 && data.value === 11){
+                if (total >= 11 && data.value === 11) {
                     total += 1;
+
+                }
+                else if (total < 11 && data.value === 11) {
+                    total += 11;
                     firstAce = true;
                 }
                 else
                     total += data.value;
-                document.getElementById('current_total').innerHTML = total;
                 checkGame();
+                document.getElementById('current_total').innerHTML = total;
+
             }
-            else if (data.card && document.getElementById('hand4').innerHTML.length === 0){
+            else if (data.card && document.getElementById('hand4').innerHTML.length === 0) {
                 document.getElementById('hand4').innerHTML = data.card;
-                if(total >= 11 && data.value === 11)
+                if (total >= 11 && data.value === 11) {
                     total += 1;
+
+                }
+                else if (total < 11 && data.value === 11) {
+                    total += 11;
+                    firstAce = true;
+                }
                 else
                     total += data.value;
-                document.getElementById('current_total').innerHTML = total;
                 checkGame();
+                document.getElementById('current_total').innerHTML = total;
+
             }
-            else if (data.card && document.getElementById('hand5').innerHTML.length === 0){
+            else if (data.card && document.getElementById('hand5').innerHTML.length === 0) {
                 document.getElementById('hand5').innerHTML = data.card;
-                if(total >= 11 && data.value === 11)
+                if (total >= 11 && data.value === 11) {
                     total += 1;
+
+                }
+                else if (total < 11 && data.value === 11) {
+                    total += 11;
+                    firstAce = true;
+                }
                 else
                     total += data.value;
-                document.getElementById('current_total').innerHTML = total;
                 checkGame();
+                document.getElementById('current_total').innerHTML = total;
+
             }
         });
     </script>
@@ -97,6 +134,25 @@
 
 <body>
     <div class="container">
+            <div class="row" style="">
+                Dealer's Hand
+                    <div class="col" style="">
+                        <p id='hand1' class="text-justify">a</p>
+                    </div>
+                    <div class="col" style="">
+                        <p id='hand2' class="text-justify">a</p>
+                    </div>
+                    <div class="col" style="">
+                        <p id='hand3' class="text-justify">a</p>
+                    </div>
+                    <div class="col" style="">
+                        <p id='hand4' class="text-justify">a</p>
+                    </div>
+                    <div class="col" style="">
+                        <p id='hand5' class="text-justify">a</p>
+                    </div>
+        
+                </div>
         <div class="row" style="top: 500px;">
             <div class="col" style="top: 500px;left: 250px;">
                 <p id='hand1' class="text-justify"></p>
@@ -113,16 +169,17 @@
             <div class="col" style="top: 500px;right: 550px;">
                 <p id='hand5' class="text-justify"></p>
             </div>
-            
+
         </div>
         <div class="row">
             <div class="col">
                 <div class="col" style="top: 460px;left: 450px;">
-                    Your Total:<p id='current_total' class="text-justify"></p>
+                    Your Total:
+                    <p id='current_total' class="text-justify"></p>
                 </div>
             </div>
             <div class="col-6" style="border-top-width: 10px;top: 500px;">
-                <button onclick="hitMe()">Hit!</button>
+                <button onclick="hitMe()" id="hit">Hit!</button>
                 <button onclick="newGame()">New Game!</button>
             </div>
             <div class="col">
