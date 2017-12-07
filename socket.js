@@ -11,6 +11,7 @@ class Player{
 }
 var id_numbers = [1,2];
 var cardStack = [];
+var dealerTotal = 0;
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -29,8 +30,10 @@ function shuffle(array) {
 
     return array;
 }
-function dealerAI(players_hands) {
-
+function dealerAI(){
+    if(dealerTotal > 21){
+        
+    }
 }
 function checkIfBust(players_hands) {
     let hand_total = 0;
@@ -82,6 +85,9 @@ io.on('connection', function (socket) {
             let card_type = hit_me();
             let card_value = getValueOfCard(card_type);
             socket.emit('fromServer', {card: card_type, value: card_value});
+        }
+        else if (data.action === "stand"){
+            dealerAI();
         }
     });
 });

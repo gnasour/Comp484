@@ -17,10 +17,18 @@
         var firstAce = false;
         var deletedTen = false;
         var bust = false;
+        var stand = false;
         var socket = io('http://localhost:3000', { path: '/' }); // connect to server
 
         function hitMe() {
             socket.emit('fromClient', { action: "hit", player_total: total });
+        }
+        function stand(){
+            stand = true;
+            document.getElementById("hit").disabled = true;
+            alert("User stands");
+            socket.emit('fromClient', {action: "stand"})
+
         }
         function newGame() {
             total = 0;
@@ -39,7 +47,6 @@
                 else{
                     alert("Bust! Start A New Game");
                     document.getElementById("hit").disabled = true;
-                    return;
                 }
             }
         }
@@ -134,25 +141,6 @@
 
 <body>
     <div class="container">
-            <div class="row" style="">
-                Dealer's Hand
-                    <div class="col" style="">
-                        <p id='hand1' class="text-justify">a</p>
-                    </div>
-                    <div class="col" style="">
-                        <p id='hand2' class="text-justify">a</p>
-                    </div>
-                    <div class="col" style="">
-                        <p id='hand3' class="text-justify">a</p>
-                    </div>
-                    <div class="col" style="">
-                        <p id='hand4' class="text-justify">a</p>
-                    </div>
-                    <div class="col" style="">
-                        <p id='hand5' class="text-justify">a</p>
-                    </div>
-        
-                </div>
         <div class="row" style="top: 500px;">
             <div class="col" style="top: 500px;left: 250px;">
                 <p id='hand1' class="text-justify"></p>
@@ -173,13 +161,14 @@
         </div>
         <div class="row">
             <div class="col">
-                <div class="col" style="top: 460px;left: 450px;">
+                <div class="col" style="top: 450px;left: 500px;">
                     Your Total:
                     <p id='current_total' class="text-justify"></p>
                 </div>
             </div>
             <div class="col-6" style="border-top-width: 10px;top: 500px;">
                 <button onclick="hitMe()" id="hit">Hit!</button>
+                <button onclick="stand()" id="stand">Stand</button>
                 <button onclick="newGame()">New Game!</button>
             </div>
             <div class="col">
