@@ -35,6 +35,12 @@
             firstAce = false;
             deletedTen = false;
             bust = false;
+            document.getElementById("hit").disabled = false;
+            document.getElementById('hand1').innerHTML = "";
+            document.getElementById('hand2').innerHTML = "";
+            document.getElementById('hand3').innerHTML = "";
+            document.getElementById('hand4').innerHTML = "";
+            document.getElementById('hand5').innerHTML = "";
             socket.emit('fromClient', { action: "new_game" });
         }
         function checkGame() {
@@ -75,7 +81,6 @@
                 document.getElementById('hand2').innerHTML = data.card;
                 if (total >= 11 && data.value === 11) {
                     total += 1;
-
                 }
                 else if (total < 11 && data.value === 11) {
                     total += 11;
@@ -91,7 +96,6 @@
                 document.getElementById('hand3').innerHTML = data.card;
                 if (total >= 11 && data.value === 11) {
                     total += 1;
-
                 }
                 else if (total < 11 && data.value === 11) {
                     total += 11;
@@ -107,7 +111,6 @@
                 document.getElementById('hand4').innerHTML = data.card;
                 if (total >= 11 && data.value === 11) {
                     total += 1;
-
                 }
                 else if (total < 11 && data.value === 11) {
                     total += 11;
@@ -123,7 +126,6 @@
                 document.getElementById('hand5').innerHTML = data.card;
                 if (total >= 11 && data.value === 11) {
                     total += 1;
-
                 }
                 else if (total < 11 && data.value === 11) {
                     total += 11;
@@ -133,7 +135,6 @@
                     total += data.value;
                 checkGame();
                 document.getElementById('current_total').innerHTML = total;
-
             }
         });
     </script>
@@ -141,20 +142,38 @@
 
 <body>
     <div class="container">
+            <div class="row" >
+                    <div class="col" >
+                        <p id='dealer_hand1' class="text-justify">a</p>
+                    </div>
+                    <div class="col" >
+                        <p id='dealer_hand2' class="text-justify">a</p>
+                    </div>
+                    <div class="col" >
+                        <p id='dealer_hand3' class="text-justify">a</p>
+                    </div>
+                    <div class="col" >
+                        <p id='dealer_hand4' class="text-justify">a</p>
+                    </div>
+                    <div class="col" >
+                        <p id='dealer_hand5' class="text-justify">a</p>
+                    </div>
+    </div>
+    <div class="container">
         <div class="row" style="top: 500px;">
-            <div class="col" style="top: 500px;left: 250px;">
+            <div class="col" style="top: 500px;left: 235px;">
                 <p id='hand1' class="text-justify"></p>
             </div>
-            <div class="col" style="top: 500px;left: 50px;">
+            <div class="col" style="top: 500px;left: 45px;">
                 <p id='hand2' class="text-justify"></p>
             </div>
-            <div class="col" style="top: 500px;right: 150px;">
+            <div class="col" style="top: 500px;right: 145px;">
                 <p id='hand3' class="text-justify"></p>
             </div>
-            <div class="col" style="top: 500px;right: 350px;">
+            <div class="col" style="top: 500px;right: 340px;">
                 <p id='hand4' class="text-justify"></p>
             </div>
-            <div class="col" style="top: 500px;right: 550px;">
+            <div class="col" style="top: 500px;right: 535px;">
                 <p id='hand5' class="text-justify"></p>
             </div>
 

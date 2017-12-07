@@ -12,6 +12,8 @@ class Player{
 var id_numbers = [1,2];
 var cardStack = [];
 var dealerTotal = 0;
+var deletedTen = false;
+var firstAce = false;
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -31,8 +33,15 @@ function shuffle(array) {
     return array;
 }
 function dealerAI(){
-    if(dealerTotal > 21){
-        
+    while(dealerTotal < 16){
+        if(dealerTotal > 21){
+            if(firstAce === true && deletedTen === false){
+                dealerTotal -= 10;
+                firstAce = false;
+                deletedTen = true;
+            }
+
+        }
     }
 }
 function checkIfBust(players_hands) {
@@ -52,11 +61,11 @@ function getValueOfCard(playing_card) {
         return parseInt(playing_card[0]);
 }
 function hit_me() {
-    return cardStack.shift();
+    return cardStack.pop();
 }
 function new_game() {
     var newCardStack = [
-        "AC", "KH", "KS", "AD",
+        "AC", "AH", "AS", "AD",
         "2C", "2H", "2S", "2D",
         "3C", "3H", "3S", "3D",
         "4C", "4H", "4S", "4D",
