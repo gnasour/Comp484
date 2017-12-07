@@ -13,6 +13,7 @@ var id_numbers = [1, 2];
 var cardStack = [];
 var deletedTen = false;
 var firstAce = false;
+var dealerTotal = 0;
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -31,7 +32,47 @@ function shuffle(array) {
 
     return array;
 }
+
+//Fix this right now!!!!
+//
+//
+//
 function dealerAI() {
+    while (dealerTotal < 17) {
+        let dealerCard = hit_me();
+        console.log(dealerCard);
+        let dealerCardValue = getValueOfCard(dealerCard)
+        if(dealerTotal >= 11 && dealerCardValue === 11)
+            dealerTotal += 1;
+        else if(dealerTotal < 11 && dealerCardValue === 11){
+            dealerTotal += 11;
+            firstAce = true;
+        } 
+        else
+            dealerTotal += dealerCardValue;
+        
+        if (dealerTotal > 21) {
+            if (firstAce === true && deletedTen === false) {
+                dealerTotal -= 10;
+                firstAce = false;
+                deletedTen = true;
+            }
+            else{
+                var dealerTotal = 0;
+                var firstAce = false;
+                var deletedTen = false;
+                
+            }
+
+        }
+        if(dealerTotal === 21){
+            var dealerTotal = 0;
+            var firstAce = false;
+            var deletedTen = false;
+            
+            
+        }
+}
 }
 function checkIfBust(players_hands) {
     let hand_total = 0;
@@ -84,32 +125,10 @@ io.on('connection', function (socket) {
             let card_value = getValueOfCard(card_type);
             socket.emit('fromServer', { card: card_type, value: card_value });
         }
-        else if (data.action === "stand") {
-            while (dealerTotal < 17) {
-                let dealerCard = hit_me();
-                let dealerCardValue = getValueOfCard(dealerCard)
-                if(dealerTotal >= 11 && dealerCardValue === 11)
-                    dealerTotal += 1;
-                else if(dealerTotal < 11 && dealerCardValue === 11){
-                    dealerTotal += 11;
-                    firstAce = true;
-                } 
-                else
-                    dealerTotal += dealerCardValue;
-                if (dealerTotal > 21) {
-                    if (firstAce === true && deletedTen === false) {
-                        dealerTotal -= 10;
-                        firstAce = false;
-                        deletedTen = true;
-                    }
-                    else
-                        socket.emit('fromServer', { dealerBust:"bust" });
-
-                }
-                if(dealerTotal === 21){
-                    socket.emit('fromServer', {dealerBlackjack:"dealerBlackjack"})
-                }
+        else if (data.action === "s") {
+            
+                dealerAI();
             }
-        }
+        
     });
 });

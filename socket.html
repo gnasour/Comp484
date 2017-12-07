@@ -19,15 +19,14 @@
         var bust = false;
         var stand = false;
         var socket = io('http://localhost:3000', { path: '/' }); // connect to server
-
+        
         function hitMe() {
             socket.emit('fromClient', { action: "hit"});
         }
         function stands(){
             stand = true;
             document.getElementById("hit").disabled = true;
-            
-            socket.emit('fromClient', {action: "stand", player_total: total })
+            socket.emit('fromClient', {action: "s", player_total: total })
 
         }
         function newGame() {
@@ -41,6 +40,7 @@
             document.getElementById('hand3').innerHTML = "";
             document.getElementById('hand4').innerHTML = "";
             document.getElementById('hand5').innerHTML = "";
+            document.getElementById('current_total').innerHTML = "";
             socket.emit('fromClient', { action: "new_game" });
         }
         function checkGame() {
@@ -60,7 +60,7 @@
             }
         }
         socket.on('fromServer', function (data) {
-
+            console.log(data.valuess);
             if (data.id && (myID == null)) {
                 myID = data.id;
                 console.log(myID);
