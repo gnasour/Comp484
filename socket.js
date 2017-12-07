@@ -90,15 +90,24 @@ io.on('connection', function (socket) {
                 let dealerCardValue = getValueOfCard(dealerCard)
                 if(dealerTotal >= 11 && dealerCardValue === 11)
                     dealerTotal += 1;
-                else if(dealerTotal < 11 ) 
-                socket.emit('fromServer', { dealer_card: dealerCard, dealer_total: dealerTotal });
+                else if(dealerTotal < 11 && dealerCardValue === 11){
+                    dealerTotal += 11;
+                    firstAce = true;
+                } 
+                else
+                    dealerTotal += dealerCardValue;
                 if (dealerTotal > 21) {
                     if (firstAce === true && deletedTen === false) {
                         dealerTotal -= 10;
                         firstAce = false;
                         deletedTen = true;
                     }
+                    else
+                        socket.emit('fromServer', { dealerBust:"bust" });
 
+                }
+                if(dealerTotal === 21){
+                    socket.emit('fromServer', {dealerBlackjack:"dealerBlackjack"})
                 }
             }
         }
