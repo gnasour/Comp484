@@ -9,12 +9,13 @@ class Player {
 
     }
 }
-var id_numbers = [1, 2];
+var user_id = [];
 var cardStack = [];
 var deletedTen = false;
 var firstAce = false;
 var dealerTotal = 0;
 var dealerBust = false;
+var num_of_players = 0;
 //Borrowed from CoolAJ86 Fisher-Yates Shuffle. stackoverflow.com
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -117,12 +118,16 @@ function resetDealer(){
 }
 io.on('connection', function (socket) {
     console.log('Player connected');
-    socket.emit('fromServer', { id: id_numbers.shift() });
+    user_id.push(socket.id);
+    num_of_players += 1;
+    console.log(num_of_players);
+    socket.emit('fromServer', { id: socket.id });
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
             resetDealer();
             cardStack = new_game();
             cardStack = shuffle(cardStack);
+
         }
         else if (data.action === "hit") {
             let card_type = hit_me();
@@ -142,5 +147,9 @@ io.on('connection', function (socket) {
             }
         }
         
+    });
+    socket.on('disconnect', function(){
+        console.log("Player Disconnected");
+        num_of_players -=1;
     });
 });

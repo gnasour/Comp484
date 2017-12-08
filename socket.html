@@ -20,7 +20,7 @@
         var stand = false;
         var blackjack = false;
         var socket = io('http://localhost:3000', { path: '/' }); // connect to server
-        
+        console.log(socket.id);
         function hitMe() {
             socket.emit('fromClient', { action: "hit"});
         }
@@ -82,7 +82,6 @@
             }
         }
         socket.on('fromServer', function (data) {
-            console.log(data.valuess);
             if (data.id && (myID == null)) {
                 myID = data.id;
                 console.log(myID);
@@ -98,8 +97,6 @@
                 }
                 else
                     total += data.value;
-                checkGame();
-                document.getElementById('current_total').innerHTML = total;
 
             }
             else if (data.card && document.getElementById('hand2').innerHTML.length === 0) {
