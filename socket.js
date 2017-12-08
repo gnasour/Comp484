@@ -14,6 +14,9 @@ var cardStack = [];
 var deletedTen = false;
 var firstAce = false;
 var dealerTotal = 0;
+var dealerBust = false;
+var num_of_drawn_cards = 0;
+//Borrowed from CoolAJ86 Fisher-Yates Shuffle. stackoverflow.com
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -36,44 +39,39 @@ function shuffle(array) {
 //Fix this right now!!!!
 //
 //
-//
+//First do everything in arrays then send them back to emit them from server
 function dealerAI() {
+    var dealersHand = [];
     while (dealerTotal < 17) {
         let dealerCard = hit_me();
+        dealersHand.push(dealerCard);
         console.log(dealerCard);
-        let dealerCardValue = getValueOfCard(dealerCard)
-        if(dealerTotal >= 11 && dealerCardValue === 11)
+        let value_of_dealer_card = getValueOfCard(dealerCard);
+        if (dealerTotal > 11 && value_of_dealer_card === 11){
             dealerTotal += 1;
-        else if(dealerTotal < 11 && dealerCardValue === 11){
-            dealerTotal += 11;
             firstAce = true;
-        } 
+        }
+        else if(dealerTotal <= 11 && value_of_dealer_card === 11){
+            dealerTotal += 11;
+        }
         else
-            dealerTotal += dealerCardValue;
-        
-        if (dealerTotal > 21) {
-            if (firstAce === true && deletedTen === false) {
+            dealerTotal += value_of_dealer_card;
+        if(dealerTotal > 21){
+            if(firstAce === true && deletedTen === false){
                 dealerTotal -= 10;
                 firstAce = false;
                 deletedTen = true;
             }
             else{
-                var dealerTotal = 0;
-                var firstAce = false;
-                var deletedTen = false;
-                
+                dealerBust = true;
             }
+        }
+        console.log(dealerTotal);
+        
+    } 
+    return dealersHand;
+}
 
-        }
-        if(dealerTotal === 21){
-            var dealerTotal = 0;
-            var firstAce = false;
-            var deletedTen = false;
-            
-            
-        }
-}
-}
 function checkIfBust(players_hands) {
     let hand_total = 0;
     players_hands.foreach(function (card) {
@@ -95,7 +93,7 @@ function hit_me() {
 }
 function new_game() {
     var newCardStack = [
-        "AC", "JH", "8S", "AD",
+        "AC", "4H", "8S", "7D",
         "2C", "2H", "2S", "2D",
         "3C", "3H", "3S", "3D",
         "4C", "4H", "4S", "4D",
@@ -127,8 +125,16 @@ io.on('connection', function (socket) {
         }
         else if (data.action === "s") {
             
-                dealerAI();
+            let dealersHand = dealerAI();
+            dealersHand.forEach(function(element){
+                
+                socket.emit('fromServer', {dealer_card: element});
+            });
+            socket.emit('fromServer', {dealer_total: dealerTotal});
+            if(dealerBust){
+                socket.emit('fromServer', {dealer_bust: "dealer_busted"});
             }
+        }
         
     });
 });

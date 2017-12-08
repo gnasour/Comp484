@@ -40,7 +40,10 @@
             document.getElementById('hand3').innerHTML = "";
             document.getElementById('hand4').innerHTML = "";
             document.getElementById('hand5').innerHTML = "";
-            document.getElementById('current_total').innerHTML = "";
+            document.getElementById('current_total').innerHTML = 0;
+            document.getElementById('user_message').innerHTML = "";
+            document.getElementById('dealer_hand').innerHTML = "";
+            document.getElementById('dealer_total').innerHTML = 0;
             socket.emit('fromClient', { action: "new_game" });
         }
         function checkGame() {
@@ -51,12 +54,12 @@
                     deletedTen = true;
                 }
                 else{
-                    alert("Bust! Start A New Game");
+                    bust = true;
                     document.getElementById("hit").disabled = true;
                 }
             }
             else if(total === 21){
-                alert("blackjack!");
+                
             }
         }
         socket.on('fromServer', function (data) {
@@ -139,21 +142,16 @@
                 checkGame();
                 document.getElementById('current_total').innerHTML = total;
             }
-            else if (data.dealer_card && document.getElementById('dealer_hand1').innerHTML.length === 0) {
-                document.getElementById('dealer_hand1').innerHTML = dealer_card;
+            else if (data.dealer_card) {
+                document.getElementById('dealer_hand').innerHTML += " " + data.dealer_card;
             }
-            else if (data.dealer_card && document.getElementById('dealer_hand2').innerHTML.length === 0) {
-                document.getElementById('dealer_hand2').innerHTML = dealer_card;
+            else if (data.dealer_total){
+                document.getElementById('dealer_total').innerHTML = data.dealer_total;
             }
-            else if (data.dealer_card && document.getElementById('dealer_hand3').innerHTML.length === 0) {
-                document.getElementById('dealer_hand3').innerHTML = dealer_card;
+            else if (data.dealer_bust){
+                document.getElementById('user_message').innerHTML = "Dealer Bust! You Win!";
             }
-            else if (data.dealer_card && document.getElementById('dealer_hand4').innerHTML.length === 0) {
-                document.getElementById('dealer_hand4').innerHTML = dealer_card;
-            }
-            else if (data.dealer_card && document.getElementById('dealer_hand5').innerHTML.length === 0) {
-                document.getElementById('dealer_hand5').innerHTML = dealer_card;
-            }
+            
         });
     </script>
 </head>
@@ -162,20 +160,12 @@
     <div class="container">
             <div class="row" >
                     <div class="col" >
-                        <p id='dealer_hand1' class="text-justify">a</p>
+                        Dealer's Hand:<p id='dealer_hand' class="text-justify" ></p>
                     </div>
-                    <div class="col" >
-                        <p id='dealer_hand2' class="text-justify">a</p>
+                    <div class="col">
+                        Dealer Total:<p id="dealer_total" class="text-justify">0</p>
                     </div>
-                    <div class="col" >
-                        <p id='dealer_hand3' class="text-justify">a</p>
-                    </div>
-                    <div class="col" >
-                        <p id='dealer_hand4' class="text-justify">a</p>
-                    </div>
-                    <div class="col" >
-                        <p id='dealer_hand5' class="text-justify">a</p>
-                    </div>
+                    
     </div>
     <div class="container">
         <div class="row" style="top: 500px;">
@@ -200,7 +190,10 @@
             <div class="col">
                 <div class="col" style="top: 450px;left: 500px;">
                     Your Total:
-                    <p id='current_total' class="text-justify"></p>
+                    <p id='current_total' class="text-justify">0</p>
+                </div>
+                <div class="col" style="left: 700px;top: 400px;">
+                    <p id='user_message' class="text-justify" ></p>
                 </div>
             </div>
             <div class="col-6" style="border-top-width: 10px;top: 500px;">
