@@ -93,7 +93,7 @@ function hit_me() {
 }
 function new_game() {
     var newCardStack = [
-        "AC", "JH", "8S", "7D",
+        "AC", "AH", "AS", "AD",
         "2C", "2H", "2S", "2D",
         "3C", "3H", "3S", "3D",
         "4C", "4H", "4S", "4D",
@@ -118,16 +118,24 @@ function resetDealer(){
 }
 io.on('connection', function (socket) {
     console.log('Player connected');
-    user_id.push(socket.id);
     num_of_players += 1;
     console.log(num_of_players);
     socket.emit('fromServer', { id: socket.id });
+    
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
             resetDealer();
             cardStack = new_game();
             cardStack = shuffle(cardStack);
-
+            let card_type = hit_me();
+            let card_value = getValueOfCard(card_type);
+            socket.emit('fromServer', {card:card_type, value: card_value});
+            socket.emit('fromServer')
+            card_type = hit_me();
+            card_value = getValueOfCard(card_type);
+            socket.emit('fromServer', {card:card_type, value: card_value});
+            
+            
         }
         else if (data.action === "hit") {
             let card_type = hit_me();
@@ -148,8 +156,9 @@ io.on('connection', function (socket) {
         }
         
     });
-    socket.on('disconnect', function(){
-        console.log("Player Disconnected");
+    socket.on('disconnect', function(socket){
+        console.log("Player Disconnected" + socket.id);
         num_of_players -=1;
+
     });
 });

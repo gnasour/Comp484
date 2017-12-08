@@ -19,8 +19,8 @@
         var bust = false;
         var stand = false;
         var blackjack = false;
+        var started = false;
         var socket = io('http://localhost:3000', { path: '/' }); // connect to server
-        console.log(socket.id);
         function hitMe() {
             socket.emit('fromClient', { action: "hit"});
         }
@@ -57,11 +57,13 @@
                 }
                 else{
                     bust = true;
+                    document.getElementById("user_message").innerHTML = "Bust!";
                     document.getElementById("hit").disabled = true;
+                    stands();
                 }
             }
             else if(total === 21){
-                document.getElementById("user_message").innerHTML = "Blackjack!";
+                document.getElementById("user_message").innerHTML = "Blackjack! You Won!";
                 document.getElementById("hit").disabled = true;
                 blackjack = true;
                 stands();
@@ -75,9 +77,12 @@
                 else if(dealer_score > total){
                     document.getElementById("user_message").innerHTML = "Dealer Wins!";
                 }
-                else if(dealer_score < total){
+                else if(dealer_score < total && !bust){
                     document.getElementById("user_message").innerHTML = "You Win!";
 
+                }
+                else if(bust){
+                    document.getElementById("user_message").innerHTML = "Bust!";
                 }
             }
         }
@@ -87,6 +92,7 @@
                 console.log(myID);
             }
             else if (data.card && document.getElementById('hand1').innerHTML.length === 0) {
+                
                 document.getElementById('hand1').innerHTML = data.card;
                 if (total >= 11 && data.value === 11) {
                     total += 1;
@@ -97,6 +103,8 @@
                 }
                 else
                     total += data.value;
+                checkGame();
+                    
 
             }
             else if (data.card && document.getElementById('hand2').innerHTML.length === 0) {
