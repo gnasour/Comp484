@@ -15,7 +15,6 @@ var deletedTen = false;
 var firstAce = false;
 var dealerTotal = 0;
 var dealerBust = false;
-var num_of_drawn_cards = 0;
 //Borrowed from CoolAJ86 Fisher-Yates Shuffle. stackoverflow.com
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -93,7 +92,7 @@ function hit_me() {
 }
 function new_game() {
     var newCardStack = [
-        "AC", "4H", "8S", "7D",
+        "AC", "JH", "8S", "7D",
         "2C", "2H", "2S", "2D",
         "3C", "3H", "3S", "3D",
         "4C", "4H", "4S", "4D",
@@ -110,13 +109,20 @@ function new_game() {
     return newCardStack;
 
 }
+function resetDealer(){
+    deletedTen = false;
+    firstAce = false;
+    dealerTotal = 0;
+    dealerBust = false;
+}
 io.on('connection', function (socket) {
     console.log('Player connected');
     socket.emit('fromServer', { id: id_numbers.shift() });
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
+            resetDealer();
             cardStack = new_game();
-            //cardStack = shuffle(cardStack);
+            cardStack = shuffle(cardStack);
         }
         else if (data.action === "hit") {
             let card_type = hit_me();
@@ -128,11 +134,11 @@ io.on('connection', function (socket) {
             let dealersHand = dealerAI();
             dealersHand.forEach(function(element){
                 
-                socket.emit('fromServer', {dealer_card: element});
+                io.local.emit('fromServer', {dealer_card: element});
             });
-            socket.emit('fromServer', {dealer_total: dealerTotal});
+            io.local.emit('fromServer', {dealer_total: dealerTotal});
             if(dealerBust){
-                socket.emit('fromServer', {dealer_bust: "dealer_busted"});
+                io.local.emit('fromServer', {dealer_bust: "dealer_busted"});
             }
         }
         
