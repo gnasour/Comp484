@@ -128,7 +128,7 @@ function hit_me() {
 }
 function new_game() {
     var newCardStack = [
-        "AC", "JH", "AS", "JD",
+        "AC", "AH", "AS", "AD",
         "2C", "2H", "2S", "2D",
         "3C", "3H", "3S", "3D",
         "4C", "4H", "4S", "4D",
