@@ -176,6 +176,9 @@
             else if (data.dealer_bust){
                 document.getElementById('user_message').innerHTML = "Dealer Bust! You Win!";
             }
+            else if (data.opponent_card){
+                document.getElementById('opponent_hand').innerHTML += " " + data.opponent_card;
+            }
             
         });
     </script>
@@ -191,6 +194,13 @@
                         Dealer Total:<p id="dealer_total" class="text-justify">0</p>
                     </div>
                     
+    </div>
+    <div class="container">
+        <div class="row" >
+            <div class="col" >
+                <p id='opponent_hand' class="text-justify"></p>
+            </div>
+        </div>
     </div>
     <div class="container">
         <div class="row" style="top: 500px;">

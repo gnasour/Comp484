@@ -120,6 +120,7 @@ io.on('connection', function (socket) {
     console.log('Player connected');
     num_of_players += 1;
     console.log(num_of_players);
+    socket.join('my-room');
     socket.emit('fromServer', { id: socket.id });
     
     socket.on('fromClient', function (data) { // listen for fromClient message
@@ -127,15 +128,15 @@ io.on('connection', function (socket) {
             resetDealer();
             cardStack = new_game();
             cardStack = shuffle(cardStack);
+            for(let i = )
             let card_type = hit_me();
             let card_value = getValueOfCard(card_type);
             socket.emit('fromServer', {card:card_type, value: card_value});
-            socket.emit('fromServer')
+            socket.in('my-room').emit('fromServer', {opponent_card:card_type, opponent_value: card_value});
             card_type = hit_me();
             card_value = getValueOfCard(card_type);
             socket.emit('fromServer', {card:card_type, value: card_value});
-            
-            
+            socket.in('my-room').emit('fromServer', {opponent_card:card_type, opponent_value: card_value});
         }
         else if (data.action === "hit") {
             let card_type = hit_me();
@@ -157,7 +158,7 @@ io.on('connection', function (socket) {
         
     });
     socket.on('disconnect', function(socket){
-        console.log("Player Disconnected" + socket.id);
+        console.log("Player Disconnected");
         num_of_players -=1;
 
     });
