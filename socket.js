@@ -16,6 +16,7 @@ var firstAce = false;
 var dealerTotal = 0;
 var dealerBust = false;
 var num_of_players = 0;
+var num_of_stands = 0;
 //Borrowed from CoolAJ86 Fisher-Yates Shuffle. stackoverflow.com
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -41,7 +42,7 @@ function shuffle(array) {
 //
 //First do everything in arrays then send them back to emit them from server
 function dealerAI() {
-    var dealersHand = [];
+    let dealersHand = [];
     while (dealerTotal < 17) {
         let dealerCard = hit_me();
         dealersHand.push(dealerCard);
@@ -49,10 +50,11 @@ function dealerAI() {
         let value_of_dealer_card = getValueOfCard(dealerCard);
         if (dealerTotal > 11 && value_of_dealer_card === 11){
             dealerTotal += 1;
-            firstAce = true;
+            
         }
         else if(dealerTotal <= 11 && value_of_dealer_card === 11){
             dealerTotal += 11;
+            firstAce = true;
         }
         else
             dealerTotal += value_of_dealer_card;
@@ -69,6 +71,30 @@ function dealerAI() {
         console.log(dealerTotal);
         
     } 
+    return dealersHand;
+}
+
+function dealerFirstDraw(){
+    let dealersHand = [];
+    let dealerCard = "";
+    let value_of_dealer_card = 0;
+    for(let i = 0; i < 2; i++){
+        
+        dealerCard = hit_me();
+        dealersHand.push(dealerCard);
+        console.log(dealerCard);
+        value_of_dealer_card = getValueOfCard(dealerCard);
+        if (dealerTotal > 11 && value_of_dealer_card === 11){
+            dealerTotal += 1;
+            
+        }
+        else if(dealerTotal <= 11 && value_of_dealer_card === 11){
+            dealerTotal += 11;
+            firstAce = true;
+        }
+        else
+            dealerTotal += value_of_dealer_card;
+    }
     return dealersHand;
 }
 
@@ -119,6 +145,8 @@ function resetDealer(){
 io.on('connection', function (socket) {
     console.log('Player connected');
     num_of_players += 1;
+    num_of_stands = num_of_players;
+    user_id.push(socket.id);
     console.log(num_of_players);
     socket.join('my-room');
     socket.emit('fromServer', { id: socket.id });
@@ -126,17 +154,33 @@ io.on('connection', function (socket) {
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
             resetDealer();
+            socket.in('my-room').emit('fromServer',{dont_go: true});
             cardStack = new_game();
             cardStack = shuffle(cardStack);
-            for(let i = )
-            let card_type = hit_me();
-            let card_value = getValueOfCard(card_type);
-            socket.emit('fromServer', {card:card_type, value: card_value});
-            socket.in('my-room').emit('fromServer', {opponent_card:card_type, opponent_value: card_value});
-            card_type = hit_me();
-            card_value = getValueOfCard(card_type);
-            socket.emit('fromServer', {card:card_type, value: card_value});
-            socket.in('my-room').emit('fromServer', {opponent_card:card_type, opponent_value: card_value});
+            let card_type = "";
+            let card_value = 0;
+            for(let i =0; i < 2; i++){
+                card_type = hit_me();
+                card_value = getValueOfCard(card_type);
+                socket.emit('fromServer', {card:card_type, value: card_value});
+                socket.in('my-room').emit('fromServer', {opponent_card:card_type, opponent_value: card_value});
+            }
+            for(let j = num_of_players; j > 1; j--){
+                for(let i =0; i < 2; i++){
+                    card_type = hit_me();
+                    card_value = getValueOfCard(card_type);
+                    socket.emit('fromServer', {opponent_card:card_type, opponent_value: card_value});
+                    socket.in('my-room').emit('fromServer', {card:card_type, value: card_value});
+                }
+            }
+            let dealersHand = dealerFirstDraw();
+            dealersHand.forEach(function(element){
+                
+                io.local.emit('fromServer', {dealer_card: element});
+            });
+            io.local.emit('fromServer', {dealer_total: dealerTotal, dealer_first_turn: true});
+            
+           
         }
         else if (data.action === "hit") {
             let card_type = hit_me();
@@ -145,15 +189,22 @@ io.on('connection', function (socket) {
         }
         else if (data.action === "s") {
             
-            let dealersHand = dealerAI();
-            dealersHand.forEach(function(element){
-                
-                io.local.emit('fromServer', {dealer_card: element});
-            });
-            io.local.emit('fromServer', {dealer_total: dealerTotal});
-            if(dealerBust){
-                io.local.emit('fromServer', {dealer_bust: "dealer_busted"});
+            if (num_of_stands ==0){
+                let dealersHand = dealerAI();
+                dealersHand.forEach(function(element){
+                    
+                    io.local.emit('fromServer', {dealer_card: element});
+                });
+                io.local.emit('fromServer', {dealer_total: dealerTotal});
+                if(dealerBust){
+                    io.local.emit('fromServer', {dealer_bust: "dealer_busted"});
+                }
             }
+            else
+                {
+                    socket.in('my-room').emit('fromServer', {dont_go: false});
+                    num_of_stands -= 1;
+                }
         }
         
     });

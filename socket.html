@@ -70,19 +70,24 @@
             }
         }
         function checkScore(dealer_score){
-            if(!blackjack){
-                if(dealer_score == total){
-                    document.getElementById("user_message").innerHTML = "Tied With Dealer!";
-                }
-                else if(dealer_score > total){
-                    document.getElementById("user_message").innerHTML = "Dealer Wins!";
-                }
-                else if(dealer_score < total && !bust){
-                    document.getElementById("user_message").innerHTML = "You Win!";
+            if(dealer_score == 21){
+                document.getElementById("user_message").innerHTML = "Dealer blackjack! You lose!";
+            }
+            else{
+                if(!blackjack){
+                    if(dealer_score == total){
+                        document.getElementById("user_message").innerHTML = "Tied With Dealer!";
+                    }
+                    else if(dealer_score > total){
+                        document.getElementById("user_message").innerHTML = "Dealer Wins!";
+                    }
+                    else if(dealer_score < total && !bust){
+                        document.getElementById("user_message").innerHTML = "You Win!";
 
-                }
-                else if(bust){
-                    document.getElementById("user_message").innerHTML = "Bust!";
+                    }
+                    else if(bust){
+                        document.getElementById("user_message").innerHTML = "Bust!";
+                    }
                 }
             }
         }
@@ -90,6 +95,9 @@
             if (data.id && (myID == null)) {
                 myID = data.id;
                 console.log(myID);
+            }
+            else if(data.reset_game){
+                newGame();
             }
             else if (data.card && document.getElementById('hand1').innerHTML.length === 0) {
                 
@@ -169,16 +177,26 @@
             else if (data.dealer_card) {
                 document.getElementById('dealer_hand').innerHTML += " " + data.dealer_card;
             }
-            else if (data.dealer_total){
+            else if (data.dealer_total && data.dealer_first_turn){
+                document.getElementById('dealer_total').innerHTML = data.dealer_total;
+            }
+            else if (data.dealer_total && !data.dealer_first_turn){
                 document.getElementById('dealer_total').innerHTML = data.dealer_total;
                 checkScore(data.dealer_total);
             }
-            else if (data.dealer_bust){
+            else if (data.dealer_bust && !bust){
                 document.getElementById('user_message').innerHTML = "Dealer Bust! You Win!";
             }
             else if (data.opponent_card){
                 document.getElementById('opponent_hand').innerHTML += " " + data.opponent_card;
             }
+            else if(data.dont_go == true){
+                document.getElementById('hit').disabled = true;
+            }
+            else if(data.dont_go == false){
+                document.getElementById('hit').disabled = false;
+            }
+            
             
         });
     </script>
