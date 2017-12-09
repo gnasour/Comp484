@@ -17,6 +17,7 @@ var dealerTotal = 0;
 var dealerBust = false;
 var num_of_players = 0;
 var num_of_stands = 0;
+var num_of_turns = 0;
 //Borrowed from CoolAJ86 Fisher-Yates Shuffle. stackoverflow.com
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -94,6 +95,14 @@ function dealerFirstDraw(){
         }
         else
             dealerTotal += value_of_dealer_card;
+        
+        if(dealerTotal > 21){
+            if(firstAce === true && deletedTen === false){
+                dealerTotal -= 10;
+                firstAce = false;
+                deletedTen = true;
+            }
+        }
     }
     return dealersHand;
 }
@@ -119,7 +128,7 @@ function hit_me() {
 }
 function new_game() {
     var newCardStack = [
-        "AC", "AH", "AS", "AD",
+        "AC", "JH", "AS", "JD",
         "2C", "2H", "2S", "2D",
         "3C", "3H", "3S", "3D",
         "4C", "4H", "4S", "4D",
@@ -153,10 +162,12 @@ io.on('connection', function (socket) {
     
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
+            num_of_turns = num_of_stands;
             resetDealer();
             socket.in('my-room').emit('fromServer',{dont_go: true});
+            socket.in('my-room').emit('fromServer',{reset_game: true});
             cardStack = new_game();
-            cardStack = shuffle(cardStack);
+            //cardStack = shuffle(cardStack);
             let card_type = "";
             let card_value = 0;
             for(let i =0; i < 2; i++){
@@ -186,10 +197,11 @@ io.on('connection', function (socket) {
             let card_type = hit_me();
             let card_value = getValueOfCard(card_type);
             socket.emit('fromServer', { card: card_type, value: card_value });
+            socket.in('my-room').emit('fromServer', {opponent_card:card_type, opponent_value: card_value});
         }
         else if (data.action === "s") {
             
-            if (num_of_stands ==0){
+            if ((num_of_turns == 0  && !data.five_card && !data.go ) || (num_of_turns == 0 && !data.busted)){
                 let dealersHand = dealerAI();
                 dealersHand.forEach(function(element){
                     
@@ -203,7 +215,7 @@ io.on('connection', function (socket) {
             else
                 {
                     socket.in('my-room').emit('fromServer', {dont_go: false});
-                    num_of_stands -= 1;
+                    num_of_turns -= 1;
                 }
         }
         
@@ -211,6 +223,7 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function(socket){
         console.log("Player Disconnected");
         num_of_players -=1;
+        num_of_stands-=1;
 
     });
 });

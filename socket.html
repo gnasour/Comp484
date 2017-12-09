@@ -20,15 +20,20 @@
         var stand = false;
         var blackjack = false;
         var started = false;
+        var num_of_cards = 2;
+        var stop_dealer_message = false;
+        var opponent_total = 0;
         var socket = io('http://localhost:3000', { path: '/' }); // connect to server
         function hitMe() {
-            socket.emit('fromClient', { action: "hit"});
+            socket.emit('fromClient', { action: "hit" });
+            num_of_cards += 1;
         }
-        function stands(){
+        function stands() {
             stand = true;
             document.getElementById("hit").disabled = true;
             document.getElementById("stand").disabled = true;
-            socket.emit('fromClient', {action: "s", player_total: total })
+            socket.emit('fromClient', { action: "s", player_total: total });
+
 
         }
 
@@ -38,6 +43,9 @@
             deletedTen = false;
             bust = false;
             blackjack = false;
+            stop_dealer_message = false;
+            num_of_cards = 2;
+            opponent_total = 0;
             document.getElementById("hit").disabled = false;
             document.getElementById("stand").disabled = false;
             document.getElementById('hand1').innerHTML = "";
@@ -52,6 +60,28 @@
             document.getElementById('opponent_hand').innerHTML = "";
             socket.emit('fromClient', { action: "new_game" });
         }
+        function clear_table() {
+            total = 0;
+            firstAce = false;
+            deletedTen = false;
+            bust = false;
+            blackjack = false;
+            stop_dealer_message = false;
+            num_of_cards = 2;
+            opponent_total = 0;
+            document.getElementById("hit").disabled = true;
+            document.getElementById("stand").disabled = true;
+            document.getElementById('hand1').innerHTML = "";
+            document.getElementById('hand2').innerHTML = "";
+            document.getElementById('hand3').innerHTML = "";
+            document.getElementById('hand4').innerHTML = "";
+            document.getElementById('hand5').innerHTML = "";
+            document.getElementById('current_total').innerHTML = 0;
+            document.getElementById('user_message').innerHTML = "";
+            document.getElementById('dealer_hand').innerHTML = "";
+            document.getElementById('dealer_total').innerHTML = 0;
+            document.getElementById('opponent_hand').innerHTML = "";
+        }
         function checkGame() {
             if (total > 21) {
                 if (firstAce === true && deletedTen === false) {
@@ -59,52 +89,69 @@
                     firstAce = false;
                     deletedTen = true;
                 }
-                else{
+                else {
                     bust = true;
                     document.getElementById("user_message").innerHTML = "Bust!";
                     document.getElementById("hit").disabled = true;
-                    stands();
+                    document.getElementById("stand").disabled = true;
+                    stop_dealer_message = true;
+                    socket.emit('fromClient', { busted: true, action: "s", go: true });
                 }
             }
-            else if(total === 21){
+            /* else if (total === 21 && num_of_cards < 3) {
                 document.getElementById("user_message").innerHTML = "Blackjack! You Won!";
                 document.getElementById("hit").disabled = true;
-                blackjack = true;
-                stands();
+                document.getElementById("stand").disabled = true;
+                stop_dealer_message = true;
+                socket.emit('fromClient', { user_blackjack: true, action: "s", go: true });
+            } */
+            else if (total === 21) {
+                document.getElementById("user_message").innerHTML = "Blackjack!";
+                document.getElementById("hit").disabled = true;
+                document.getElementById("stand").disabled = true;
+                socket.emit('fromClient', { user_blackjack: true, action: "s", go: true });
+            }
+            else if (num_of_cards == 5 && !bust) {
+                document.getElementById("user_message").innerHTML = "Five Card Charlie! You Win!";
+                document.getElementById("hit").disabled = true;
+                document.getElementById("stand").disabled = true;
+                stop_dealer_message = true;
+                socket.emit('fromClient', { five_card: true, action: "s", go: true });
             }
         }
-        function checkScore(dealer_score){
-            if(dealer_score == 21){
-                document.getElementById("user_message").innerHTML = "Dealer blackjack! You lose!";
-            }
-            else{
-                if(!blackjack){
-                    if(dealer_score == total){
-                        document.getElementById("user_message").innerHTML = "Tied With Dealer!";
-                    }
-                    else if(dealer_score > total){
-                        document.getElementById("user_message").innerHTML = "Dealer Wins!";
-                    }
-                    else if(dealer_score < total && !bust){
-                        document.getElementById("user_message").innerHTML = "You Win!";
+        function checkScore(dealer_score) {
 
-                    }
-                    else if(bust){
-                        document.getElementById("user_message").innerHTML = "Bust!";
-                    }
+
+            if (!stop_dealer_message) {
+                if (dealer_score == total) {
+                    document.getElementById("user_message").innerHTML = "Tied With Dealer!";
+                }
+                else if (dealer_score > 21 && !bust) {
+                    document.getElementById("user_message").innerHTML = "Dealer Bust! You Win!";
+                }
+                else if (dealer_score > total) {
+                    document.getElementById("user_message").innerHTML = "Dealer Wins!";
+                }
+                else if (dealer_score < total && !bust) {
+                    document.getElementById("user_message").innerHTML += "You Win!";
+
+                }
+                else if (bust) {
+                    document.getElementById("user_message").innerHTML = "Bust!";
                 }
             }
+
         }
         socket.on('fromServer', function (data) {
             if (data.id && (myID == null)) {
                 myID = data.id;
                 console.log(myID);
             }
-            else if(data.reset_game){
-                newGame();
+            else if (data.reset_game) {
+                clear_table();
             }
             else if (data.card && document.getElementById('hand1').innerHTML.length === 0) {
-                
+
                 document.getElementById('hand1').innerHTML = data.card;
                 if (total >= 11 && data.value === 11) {
                     total += 1;
@@ -116,7 +163,7 @@
                 else
                     total += data.value;
                 checkGame();
-                    
+
 
             }
             else if (data.card && document.getElementById('hand2').innerHTML.length === 0) {
@@ -181,90 +228,101 @@
             else if (data.dealer_card) {
                 document.getElementById('dealer_hand').innerHTML += " " + data.dealer_card;
             }
-            else if (data.dealer_total && data.dealer_first_turn){
+            else if (data.dealer_total && data.dealer_first_turn) {
                 document.getElementById('dealer_total').innerHTML = data.dealer_total;
+                if (data.dealer_total == 21) {
+                    document.getElementById("user_message").innerHTML = "Dealer blackjack! You lose!";
+                    document.getElementById('hit').disabled = true;
+                    document.getElementById('stand').disabled = true;
+                }
             }
-            else if (data.dealer_total && !data.dealer_first_turn){
+            else if (data.dealer_total && !data.dealer_first_turn) {
                 document.getElementById('dealer_total').innerHTML = data.dealer_total;
                 checkScore(data.dealer_total);
             }
-            else if (data.dealer_bust && !bust){
-                document.getElementById('user_message').innerHTML = "Dealer Bust! You Win!";
-            }
-            else if (data.opponent_card){
+            else if (data.opponent_card) {
                 document.getElementById('opponent_hand').innerHTML += " " + data.opponent_card;
+                opponent_total += data.opponent_value;
+                document.getElementById('opponent_total').innerHTML = opponent_total;
             }
-            else if(data.dont_go == true){
+            else if (data.dont_go == true) {
                 document.getElementById('hit').disabled = true;
                 document.getElementById('stand').disabled = true;
             }
-            else if(data.dont_go == false){
+            else if (data.dont_go == false) {
                 document.getElementById('hit').disabled = false;
                 document.getElementById('stand').disabled = false;
             }
-            
-            
+
+
         });
     </script>
 </head>
 
 <body>
     <div class="container">
-            <div class="row" >
-                    <div class="col" >
-                        Dealer's Hand:<p id='dealer_hand' class="text-justify" ></p>
-                    </div>
-                    <div class="col">
-                        Dealer Total:<p id="dealer_total" class="text-justify">0</p>
-                    </div>
-                    
-    </div>
-    <div class="container">
-        <div class="row" >
-            <div class="col" >
-                <p id='opponent_hand' class="text-justify"></p>
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <div class="row" style="top: 500px;">
-            <div class="col" style="top: 500px;left: 235px;">
-                <p id='hand1' class="text-justify"></p>
-            </div>
-            <div class="col" style="top: 500px;left: 45px;">
-                <p id='hand2' class="text-justify"></p>
-            </div>
-            <div class="col" style="top: 500px;right: 145px;">
-                <p id='hand3' class="text-justify"></p>
-            </div>
-            <div class="col" style="top: 500px;right: 340px;">
-                <p id='hand4' class="text-justify"></p>
-            </div>
-            <div class="col" style="top: 500px;right: 535px;">
-                <p id='hand5' class="text-justify"></p>
-            </div>
-
-        </div>
         <div class="row">
             <div class="col">
-                <div class="col" style="top: 450px;left: 500px;">
-                    Your Total:
-                    <p id='current_total' class="text-justify">0</p>
-                </div>
-                <div class="col" style="left: 700px;top: 400px;">
-                    <p id='user_message' class="text-justify" ></p>
-                </div>
-            </div>
-            <div class="col-6" style="border-top-width: 10px;top: 500px;">
-                <button onclick="hitMe()" id="hit">Hit!</button>
-                <button onclick="stands()" id="stand">Stand</button>
-                <button onclick="newGame()" >New Game!</button>
+                Dealer's Hand:
+                <p id='dealer_hand' class="text-justify"></p>
             </div>
             <div class="col">
+                Dealer Total:
+                <p id="dealer_total" class="text-justify">0</p>
+            </div>
 
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    Opponent's Hand:
+                    <p id='opponent_hand' class="text-justify"></p>
+                </div>
+                <div class="col">
+                    Opponent Total:
+                    <p id='opponent_total' class="text-justify">0</p>
+                </div>
             </div>
         </div>
-    </div>
+        <div class="container">
+            <div class="row" style="top: 500px;">
+                <div class="col" style="top: 500px;left: 235px;">
+                    <p id='hand1' class="text-justify"></p>
+                </div>
+                <div class="col" style="top: 500px;left: 45px;">
+                    <p id='hand2' class="text-justify"></p>
+                </div>
+                <div class="col" style="top: 500px;right: 145px;">
+                    <p id='hand3' class="text-justify"></p>
+                </div>
+                <div class="col" style="top: 500px;right: 340px;">
+                    <p id='hand4' class="text-justify"></p>
+                </div>
+                <div class="col" style="top: 500px;right: 535px;">
+                    <p id='hand5' class="text-justify"></p>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="col" style="top: 450px;left: 500px;">
+                        Your Total:
+                        <p id='current_total' class="text-justify">0</p>
+                    </div>
+                    <div class="col" style="left: 700px;top: 400px;">
+                        <p id='user_message' class="text-justify"></p>
+                    </div>
+                </div>
+                <div class="col-6" style="border-top-width: 10px;top: 500px;">
+                    <button onclick="hitMe()" id="hit" disabled>Hit!</button>
+                    <button onclick="stands()" id="stand" disabled>Stand</button>
+                    <button onclick="newGame()">New Game!</button>
+                </div>
+                <div class="col">
+
+                </div>
+            </div>
+        </div>
 </body>
 
 </html>
