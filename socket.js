@@ -145,7 +145,7 @@ function resetDealer(){
 io.on('connection', function (socket) {
     console.log('Player connected');
     num_of_players += 1;
-    num_of_stands = num_of_players;
+    num_of_stands = num_of_players-1;
     user_id.push(socket.id);
     console.log(num_of_players);
     socket.join('my-room');

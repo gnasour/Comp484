@@ -27,9 +27,11 @@
         function stands(){
             stand = true;
             document.getElementById("hit").disabled = true;
+            document.getElementById("stand").disabled = true;
             socket.emit('fromClient', {action: "s", player_total: total })
 
         }
+
         function newGame() {
             total = 0;
             firstAce = false;
@@ -37,6 +39,7 @@
             bust = false;
             blackjack = false;
             document.getElementById("hit").disabled = false;
+            document.getElementById("stand").disabled = false;
             document.getElementById('hand1').innerHTML = "";
             document.getElementById('hand2').innerHTML = "";
             document.getElementById('hand3').innerHTML = "";
@@ -46,6 +49,7 @@
             document.getElementById('user_message').innerHTML = "";
             document.getElementById('dealer_hand').innerHTML = "";
             document.getElementById('dealer_total').innerHTML = 0;
+            document.getElementById('opponent_hand').innerHTML = "";
             socket.emit('fromClient', { action: "new_game" });
         }
         function checkGame() {
@@ -192,9 +196,11 @@
             }
             else if(data.dont_go == true){
                 document.getElementById('hit').disabled = true;
+                document.getElementById('stand').disabled = true;
             }
             else if(data.dont_go == false){
                 document.getElementById('hit').disabled = false;
+                document.getElementById('stand').disabled = false;
             }
             
             
