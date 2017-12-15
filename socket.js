@@ -167,7 +167,7 @@ io.on('connection', function (socket) {
             socket.in('my-room').emit('fromServer',{dont_go: true});
             socket.in('my-room').emit('fromServer',{reset_game: true});
             cardStack = new_game();
-            //cardStack = shuffle(cardStack);
+            cardStack = shuffle(cardStack);
             let card_type = "";
             let card_value = 0;
             for(let i =0; i < 2; i++){

@@ -115,6 +115,7 @@
                 document.getElementById("user_message").innerHTML = "Blackjack!";
                 document.getElementById("hit").disabled = true;
                 document.getElementById("stand").disabled = true;
+                stop_dealer_message = true;
                 socket.emit('fromClient', { user_blackjack: true, action: "s", go: true });
             }
             else if (num_of_cards == 5 && !bust) {
