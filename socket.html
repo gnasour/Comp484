@@ -15,7 +15,9 @@
         var myID = null;
         var total = 0;
         var firstAce = false;
+        var opponent_firstAce = false;
         var deletedTen = false;
+        var opponent_deletedTen = false;
         var bust = false;
         var stand = false;
         var blackjack = false;
@@ -44,6 +46,8 @@
             bust = false;
             blackjack = false;
             stop_dealer_message = false;
+            opponent_firstAce = false;
+            opponent_deletedTen = false;
             num_of_cards = 2;
             opponent_total = 0;
             document.getElementById("hit").disabled = false;
@@ -67,6 +71,8 @@
             bust = false;
             blackjack = false;
             stop_dealer_message = false;
+            opponent_firstAce = false;
+            opponent_deletedTen = false;
             num_of_cards = 2;
             opponent_total = 0;
             document.getElementById("hit").disabled = true;
@@ -117,6 +123,13 @@
                 document.getElementById("stand").disabled = true;
                 stop_dealer_message = true;
                 socket.emit('fromClient', { five_card: true, action: "s", go: true });
+            }
+        }
+        function check_opponent_game(){
+            if(opponent_total > 21 && opponent_firstAce && !opponent_deletedTen){
+                opponent_total -= 10;
+                opponent_firstAce = false;
+                opponent_deletedTen = true;
             }
         }
         function checkScore(dealer_score) {
@@ -242,7 +255,16 @@
             }
             else if (data.opponent_card) {
                 document.getElementById('opponent_hand').innerHTML += " " + data.opponent_card;
-                opponent_total += data.opponent_value;
+                if (opponent_total >= 11 && data.opponent_value === 11) {
+                    opponent_total += 1;
+                }
+                else if (opponent_total < 11 && data.opponent_value === 11) {
+                    opponent_total += 11;
+                    opponent_firstAce = true;
+                }
+                else
+                    opponent_total += data.opponent_value;
+                check_opponent_game();
                 document.getElementById('opponent_total').innerHTML = opponent_total;
             }
             else if (data.dont_go == true) {
