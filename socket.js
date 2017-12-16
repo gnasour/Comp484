@@ -83,7 +83,7 @@ function dealerFirstDraw(){
         
         dealerCard = hit_me();
         dealersHand.push(dealerCard);
-        console.log(dealerCard);
+        //console.log(dealerCard);
         value_of_dealer_card = getValueOfCard(dealerCard);
         if (dealerTotal > 11 && value_of_dealer_card === 11){
             dealerTotal += 1;
@@ -163,6 +163,7 @@ io.on('connection', function (socket) {
     socket.on('fromClient', function (data) { // listen for fromClient message
         if (data.action === "new_game") {
             num_of_turns = num_of_stands;
+            console.log(num_of_turns);
             resetDealer();
             socket.in('my-room').emit('fromServer',{dont_go: true});
             socket.in('my-room').emit('fromServer',{reset_game: true});
@@ -200,7 +201,7 @@ io.on('connection', function (socket) {
             socket.in('my-room').emit('fromServer', {opponent_card:card_type, opponent_value: card_value});
         }
         else if (data.action === "s") {
-            
+            console.log(num_of_turns);
             if ((num_of_turns == 0  && !data.five_card && !data.go ) || (num_of_turns == 0 && !data.busted)){
                 let dealersHand = dealerAI();
                 dealersHand.forEach(function(element){
@@ -214,7 +215,7 @@ io.on('connection', function (socket) {
             }
             else
                 {
-                    socket.in('my-room').emit('fromServer', {dont_go: false});
+                    socket.in('my-room').emit('fromServer', {dont_go: false, user_stands: data.user_stand});
                     num_of_turns -= 1;
                 }
         }

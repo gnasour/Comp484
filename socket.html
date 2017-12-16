@@ -14,6 +14,7 @@
     <script type='text/javascript'>
         var myID = null;
         var total = 0;
+        var went = false;
         var firstAce = false;
         var opponent_firstAce = false;
         var deletedTen = false;
@@ -25,6 +26,7 @@
         var num_of_cards = 2;
         var stop_dealer_message = false;
         var opponent_total = 0;
+        var other_user_stands = false;
         var socket = io('http://localhost:3000', { path: '/' }); // connect to server
         function hitMe() {
             socket.emit('fromClient', { action: "hit" });
@@ -34,20 +36,24 @@
             stand = true;
             document.getElementById("hit").disabled = true;
             document.getElementById("stand").disabled = true;
-            socket.emit('fromClient', { action: "s", player_total: total });
+            went = true;
+            socket.emit('fromClient', { action: "s", go: true, user_stand: stand});
 
 
         }
 
         function newGame() {
             total = 0;
+            went = false;
             firstAce = false;
             deletedTen = false;
             bust = false;
             blackjack = false;
+            stand = false;
             stop_dealer_message = false;
             opponent_firstAce = false;
             opponent_deletedTen = false;
+            other_user_stands = false;
             num_of_cards = 2;
             opponent_total = 0;
             document.getElementById("hit").disabled = false;
@@ -66,6 +72,7 @@
         }
         function clear_table() {
             total = 0;
+            went = false;
             firstAce = false;
             deletedTen = false;
             bust = false;
@@ -73,6 +80,8 @@
             stop_dealer_message = false;
             opponent_firstAce = false;
             opponent_deletedTen = false;
+            other_user_stands = false;
+            stand = false;
             num_of_cards = 2;
             opponent_total = 0;
             document.getElementById("hit").disabled = true;
@@ -97,11 +106,15 @@
                 }
                 else {
                     bust = true;
+                    went = true;
                     document.getElementById("user_message").innerHTML = "Bust!";
                     document.getElementById("hit").disabled = true;
                     document.getElementById("stand").disabled = true;
                     stop_dealer_message = true;
-                    socket.emit('fromClient', { busted: true, action: "s", go: true });
+                    if(other_user_stands)
+                        socket.emit('fromClient', { busted: true, action: "s"});
+                    else 
+                        socket.emit('fromClient', { busted: true, action: "s", go: true});
                 }
             }
             /* else if (total === 21 && num_of_cards < 3) {
@@ -116,6 +129,7 @@
                 document.getElementById("hit").disabled = true;
                 document.getElementById("stand").disabled = true;
                 stop_dealer_message = true;
+                went = true;
                 socket.emit('fromClient', { user_blackjack: true, action: "s", go: true });
             }
             else if (num_of_cards == 5 && !bust) {
@@ -123,6 +137,7 @@
                 document.getElementById("hit").disabled = true;
                 document.getElementById("stand").disabled = true;
                 stop_dealer_message = true;
+                went = true;
                 socket.emit('fromClient', { five_card: true, action: "s", go: true });
             }
         }
@@ -272,7 +287,8 @@
                 document.getElementById('hit').disabled = true;
                 document.getElementById('stand').disabled = true;
             }
-            else if (data.dont_go == false) {
+            else if (data.dont_go == false && went === false) {
+                other_user_stands = data.user_stands;
                 document.getElementById('hit').disabled = false;
                 document.getElementById('stand').disabled = false;
             }
